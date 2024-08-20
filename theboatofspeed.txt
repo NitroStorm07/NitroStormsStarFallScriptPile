@@ -1,0 +1,136 @@
+--@name TheBoatofSpeed
+--@author NitroCar
+--@shared
+
+if SERVER then
+
+chip():setNocollideAll(false)
+
+// Create the Airboat.
+MyVehicle = prop.createSent(chip():getPos(), chip():getAngles(), "Airboat", false)
+
+HoloModel = "models/airboat.mdl"
+
+// Use this if holo is facing wrong way.
+YawOffset = 0
+
+HoloSize = Vector(1,1,1)
+
+VehicleHolo = hologram.create(MyVehicle:getPos(), MyVehicle:getAngles(), HoloModel, HoloSize)
+
+VehicleHolo:suppressEngineLighting(false)
+//VehicleHolo:addEffects(256)
+
+//sounds
+RocketSound = sound.create(MyVehicle, "thrusters/jet02.wav", true)
+
+HornSound = sound.create(MyVehicle, "wowozela/samples/horn/horn.ogg", true)
+
+HelicopterSound = sound.create(MyVehicle, "npc/attack_helicopter/aheli_rotor_loop1.wav", true)
+
+MyVehicle:emitSound("plats/tram_motor_start.wav", 75, 100,1, CHAN_AUTO)
+
+
+// variables
+AirboatSpeed = 25
+// Used for horn to stop constant pitch changes.
+DoOnce = 0
+
+
+MyVehicle:setColor(Color(0,0,255,0))
+
+MyVehicle:setTrails(128, 0, 1000, "trails/physbeam", Color(0,0,255,255), nil, false)
+
+function ServerTick()
+    
+    // get the driver of the Airboat.
+    Player = MyVehicle:getDriver()
+    
+    VehicleHolo:setPos(MyVehicle:getPos())
+    
+    VehicleHolo:setAngles(Angle(MyVehicle:getAngles().p,MyVehicle:getAngles().y + YawOffset, MyVehicle:getAngles().r) )
+    
+    
+    // Make sure someone is driving it, or we will get an error!
+    if MyVehicle:isValid() then
+        
+        MyVehicle:setMass(50000)
+        
+        MyVehicle:enableGravity(true)
+   
+    end
+    if Player:isValid() then
+        // If the player is holding the forward key, then proceed.
+        if Player:keyDown(8) then
+            if Player:inVehicle() then
+                
+                RocketSound:play()
+                
+                MyVehicle:applyForceCenter(MyVehicle:getForward() * AirboatSpeed * MyVehicle:getMass())
+                //MyVehicle:setVelocity(MyVehicle:getForward() * AirboatSpeed * MyVehicle:getMass() * 100)
+        end
+
+            end
+            
+            
+            if Player:keyDown(16) then
+                
+                if Player:inVehicle() then
+                    RocketSound:play()
+                    MyVehicle:applyForceCenter(MyVehicle:getForward() * (AirboatSpeed * -1 ) * MyVehicle:getMass())
+            
+            end
+
+                end
+                
+                
+                if Player:keyDown(2) then
+                
+                if Player:inVehicle() then
+                    MyVehicle:applyForceCenter(MyVehicle:getUp() * AirboatSpeed * 2 * MyVehicle:getMass())
+                    HelicopterSound:play()
+            
+            end
+
+                end
+            
+            
+            if Player:keyDown(8192) then
+                
+                if Player:inVehicle() then
+                    
+                    if DoOnce == 0 then
+                    HornSound:play()
+                    HornSound:setPitch(math.random(50, 100), 0)
+                    DoOnce = 1
+                end
+                    
+            end
+
+                end
+            
+        if !Player:keyDown(8) and !Player:keyDown(16) then
+            RocketSound:stop()
+        end
+        
+        if !Player:keyDown(2)then
+            HelicopterSound:stop()
+        end
+        
+        if !Player:keyDown(8192) then
+            HornSound:stop()
+            DoOnce = 0
+        end
+        
+        
+    end
+    
+    
+    
+end
+
+hook.add("think", "STick", ServerTick)
+
+
+
+end

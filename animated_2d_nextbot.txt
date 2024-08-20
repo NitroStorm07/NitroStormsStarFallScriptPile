@@ -1,0 +1,203 @@
+--@name Animated 2D Nextbot V1
+--@author NitroStorm
+--@shared
+
+//Holo:setMaterial( "!" .. Material:getName()) (How to get material)
+
+// Shared Variables
+
+// the smaller number FPS has the faster the animation is.
+
+FPS = 0.25
+
+//Current Frame
+
+Frame = 0
+
+// Decides if the holo should be affected by lights.
+AnimHoloFullBright = true
+
+
+//Client\\
+if CLIENT then
+    
+   // Music. I removed the url domain so its easier to add more music further on without having to change the url domain to dl.dropboxusercontent.com.
+
+    //Music by Kevin MacLeod. Find his music at: https://incompetech.com/music/royalty-free/
+    MusicTable = {
+        [1] = "/scl/fi/r0iqttp92yb8rx978162l/Stringed-Disco.mp3?rlkey=1wlkz60fjd21yiyfiwor7hwhq&st=lbofjz32&dl=1",
+        [2] = "/scl/fi/5mcbqtzeabe9bx1lmet8j/Boogie-Party.mp3?rlkey=5d0q88uugadtxt5c2h1mr00ja&st=czavrla3&dl=1",
+        }
+    
+    // callback functions for the materials, do not remove or it will error the code.
+    function cb()
+    end
+    function done(material, url) 
+    end
+    
+    // This is where you can add frames. Don't forget to register them to the AnimTable inside the AnimClock function!
+    
+    // create our materials
+    Shader = "VertexLitGeneric"
+    
+    Frame1 = material.create(Shader)
+    Frame1:setTextureURL("$basetexture", "https://dl.dropboxusercontent.com/scl/fi/u23umhpj4feuh26e8os05/bob.png?rlkey=4hb7ontdn6r16uh64v6x7v91f&st=bin55z61&dl=1",cb, done)
+    
+    
+        
+    Frame2 = material.create(Shader)
+    Frame2:setTextureURL("$basetexture", "https://dl.dropboxusercontent.com/scl/fi/lwdgdvl52qjnxvr7ihbu5/bob2.png?rlkey=fdcedlkmccg2c4wj9k334r9k4&st=lt33vor0&dl=1",cb, done)
+    
+// empty variable used to reference the Bass object in the BassCB function
+    BassRef = nil
+    
+    // Bass callback
+    function BassCB(Bass,error,name)
+       
+            Bass:setPos(AnimHolo:getPos())
+            BassRef = Bass
+            Bass:setLooping(true)
+    end
+    
+    // Create a plane for the sprites to go on.
+    AnimHolo = hologram.create(chip():getPos(), chip():getAngles(), "models/sprops/misc/boxplane.mdl", Vector(10,10,10))
+    
+    // this gives the sprites transparency.
+    AnimHolo:setColor(Color(255,255,255,254))
+    
+    // initialize bass music
+   
+    MyMusic = bass.loadURL("https://dl.dropboxusercontent.com" .. table.random(MusicTable), "3d noblock", BassCB)
+
+    
+    
+    //initalize a variable to keep count of the current frame.
+    FrameCounter = 0
+    function ClientTick()
+        
+        // get the nextbot from the server.
+        net.receive("nx",function()
+        
+        NBot = net.readEntity()
+        //Make sure it exists before doing anything
+        if NBot:isValid() then
+            
+            // if your images are off centre, use these variables to position it.
+            
+            HoloHorizontalOffset = NBot:getRight() * -45 // <- change this value if needed
+            
+            HoloVerticalOffset = NBot:getUp() * -45 // <- change this value if needed
+            
+            AnimHolo:setPos(Vector(NBot:getPos().x,NBot:getPos().y,NBot:getPos().z + 50) + HoloHorizontalOffset + HoloVerticalOffset)
+            
+            if BassRef != nil then
+                BassRef:setPos(AnimHolo:getPos())
+            end
+            
+            AnimHolo:setAngles(Angle(NBot:getAngles().p + 90,NBot:getAngles().y + 90,NBot:getAngles().r  + 90))
+        end
+        
+        end)
+        
+        
+    end
+    
+    // Animation \\
+    function AnimClock()
+        
+        // Make a timer which will play our animation.
+        timer.simple(FPS, function()
+            
+            // table containing frames
+            // You can register more frames here!
+            AnimTable = {
+            [0] = Frame1:getName(),
+            [1] = Frame2:getName(),
+            }
+            
+                if Frame > 1 then
+                    Frame = 0
+                    // run the anim again.
+                    AnimClock()
+                else
+                     AnimClock()
+            end
+                    
+                    //set our material to the current frame.
+                    if Frame > -1 and Frame < table.count(AnimTable) then
+                        
+                    AnimHolo:setMaterial("!" .. AnimTable[Frame])
+                    Frame = Frame + 1
+                    end
+            end)
+    end
+        // start the AnimClock.
+        AnimClock()
+        
+    // makes the hologram fullbright
+    AnimHolo:suppressEngineLighting(AnimHoloFullBright)
+    
+    // add a hook for ticking on the client.
+    hook.add("tick", "CTick", ClientTick)  
+end
+  
+if SERVER then
+    
+// create our nextbot.
+MyNextbot = nextbot.create(chip():getPos(),"models/Humans/Group01/male_07.mdl")
+
+// nextbot parameters
+MyNextbot:setMoveSpeed(400)
+
+chip():setNocollideAll(true)
+
+chip():setColor(Color(0,0,0,0))
+
+MyNextbot:setHealth(200)
+
+MyNextbot:setStepHeight(18 * 2)
+
+MyNextbot:setColor(Color(0,0,0,0))
+
+
+function ServerTick()
+    
+    // send the nextbot to client.
+    timer.simple(0.1,function()
+            net.start("nx")
+            net.writeEntity(MyNextbot)
+            net.send()
+    end)
+    
+    // nextbot chasing logic
+    if MyNextbot:isValid() then
+        
+        // find all players and filter it to only chase after the closest one.
+        FindPlayers = find.byClass("player", nil)
+        
+        FindClosest = find.closest(FindPlayers, MyNextbot:getPos())
+        
+        // face towards the closest player.
+    MyNextbot:faceTowards(FindClosest:getPos())
+    
+    // move the nextbot.
+    MyNextbot:setApproachPos(FindClosest:getPos())
+end
+    
+end
+
+// runs when the nextbot runs out of HP.
+function Die(Damage)
+// delete the chip when the nextbot dies.
+chip():remove()
+end
+// Server tick and death callback.
+MyNextbot:addDeathCallback("Die", Die)
+hook.add("tick", "STick", ServerTick)
+
+
+end
+
+// Made by NitroStorm. Do not change this line.
+
+// Works on Zoltins Sandbox (last checked August 2024)

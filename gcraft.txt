@@ -1,0 +1,280 @@
+--@name GCraft
+--@author NitroCar
+--@shared
+
+
+//HOW TO USE
+
+// To build anything, you need access to a hands swep (where you dont hold anything)
+
+// Like in minecraft, use the Left mouse button to Break and the right mouse to build.
+
+// You can change your block by typing in !givegcitem in chat and then adding either one of the key words like !givegcitem dirt, !givegcitem planks or !givegcitem grass
+//Or you can provide your own image url like for example: (!givegcitem https://dl.dropboxusercontent.com/scl/fi/2ala4cbbzrpa6h4sbe2nq/dirt.png?rlkey=zrm14t53howfiu32mnht2flv8&st=l3kfi9pc&dl=1)
+
+//End of tutorial.
+
+//Shared Variables
+
+//Stores all block entities for later use.
+BlockTable = {}
+
+//Materials Table
+MatTable = {}
+
+//Makes the blocks place and break only on the inital click and not for the duration of holding down a mouse button.
+DoOnceBuild = 1
+DoOnceBreak = 1
+
+// The model of which the blocks use, best not to change it.
+BlockModel = "models/hunter/blocks/cube1x1x1.mdl"
+
+
+
+if CLIENT then
+    
+    //MATERIALS\\
+    // callback functions for the materials, do not remove or it will error the code.
+    function cb()
+    end
+    
+    function done(material, url) 
+    end
+    
+    //inital creation of material.
+    // create our material
+    Shader = "VertexLitGeneric"
+    
+    // First Material will always be dirt.
+    BlockMat = material.create(Shader)
+    
+    BlockMat:setTextureURL("$basetexture", "https://dl.dropboxusercontent.com/scl/fi/2ala4cbbzrpa6h4sbe2nq/dirt.png?rlkey=zrm14t53howfiu32mnht2flv8&st=l3kfi9pc&dl=1",cb, done)
+    
+    // register materials into a table.
+    table.insert(MatTable, #MatTable + 1, BlockMat)
+    printTable(MatTable)
+    
+    
+    //function for !givegcitem
+    function MakeMaterial(url)
+    BlockMat = material.create(Shader)
+    
+    BlockMat:setTextureURL("$basetexture", url,cb, done)
+    
+    // register materials into a table.
+    table.insert(MatTable, #MatTable + 1, BlockMat)
+    end
+
+    function ClientTick()
+        
+        // Make sure blockmat is valid before sending the string.
+        if BlockMat != nil then
+                net.start("InitMCBlockMaterial")
+                
+                net.writeString(BlockMat:getName())
+                
+                net.send(nil, false)
+            end
+            
+        //Build
+        if owner():keyDown(2048) and DoOnceBuild == 1 then
+            
+                
+                DoOnceBuild = 0
+                
+            net.start("PlaceBlock")
+            
+            net.writeString(BlockMat:getName())
+            
+                net.send(nil, false)
+                
+                timer.simple(1,function()
+                    
+                    net.start("InitMCBlockMaterial")
+                    
+                    net.writeString(BlockMat:getName())
+                    
+                    net.send(nil, false)
+                    
+                    
+                    end)
+            
+        
+        end
+        
+        // Let the user build after they let go of the key
+        if !owner():keyDown(2048) then
+            DoOnceBuild = 1
+        end
+        
+        // Break
+        if owner():keyDown(1) and DoOnceBreak == 1 then
+            DoOnceBreak = 0
+            net.start("BreakBlock")
+            net.send(nil, false)
+        
+        end
+        
+        if !owner():keyDown(1) then
+            DoOnceBreak = 1
+        end
+    end
+    
+    //Commands for !givegcitem, you can add more presets here!
+    function OwnerChat(ply,text)
+        if ply == owner() then
+            
+            //Custom Image url
+                if string.find(text, "!givegcitem ", 0, false) and string.find(text, "https:", 0, false) != nil then
+                //BlockMat:setTextureURL("$basetexture", "https://dl.dropboxusercontent.com/scl/fi/dn2gn8609o7eeb4mngs8i/spongbobevil.png?rlkey=suezh7m365ell47557y0v8y5l&dl=0",cb, done)
+                
+                MakeMaterial(string.replace(text, "!givegcitem ", ""))
+            
+            end
+            //Planks
+            if string.find(text, "!givegcitem ", 0, false) and string.find(text, "planks", 0, false) != nil then
+                //BlockMat:setTextureURL("$basetexture", "https://dl.dropboxusercontent.com/scl/fi/dn2gn8609o7eeb4mngs8i/spongbobevil.png?rlkey=suezh7m365ell47557y0v8y5l&dl=0",cb, done)
+                
+                MakeMaterial("https://dl.dropboxusercontent.com/scl/fi/7xc2vy11bq6jz8wpsm9sp/planks_oak.png?rlkey=ylizprd92t7rhn5qteltinphx&dl=0")
+            
+            end
+            //grass
+            if string.find(text, "!givegcitem ", 0, false) and string.find(text, "grass", 0, false) != nil then
+                //BlockMat:setTextureURL("$basetexture", "https://dl.dropboxusercontent.com/scl/fi/dn2gn8609o7eeb4mngs8i/spongbobevil.png?rlkey=suezh7m365ell47557y0v8y5l&dl=0",cb, done)
+                
+                MakeMaterial("https://dl.dropboxusercontent.com/scl/fi/a2mpki7kiy23co5ph3unv/grass_carried.png?rlkey=z7yu9zzjb0jhreueongakcgfg&dl=0")
+            
+            end
+            //Dirt
+            if string.find(text, "!givegcitem ", 0, false) and string.find(text, "dirt", 0, false) != nil then
+                //BlockMat:setTextureURL("$basetexture", "https://dl.dropboxusercontent.com/scl/fi/dn2gn8609o7eeb4mngs8i/spongbobevil.png?rlkey=suezh7m365ell47557y0v8y5l&dl=0",cb, done)
+                
+                MakeMaterial("https://dl.dropboxusercontent.com/scl/fi/2ala4cbbzrpa6h4sbe2nq/dirt.png?rlkey=zrm14t53howfiu32mnht2flv8&st=l3kfi9pc&dl=1")
+            
+            end
+            //Bricks
+            if string.find(text, "!givegcitem ", 0, false) and string.find(text, "bricks", 0, false) != nil then
+                //BlockMat:setTextureURL("$basetexture", "https://dl.dropboxusercontent.com/scl/fi/dn2gn8609o7eeb4mngs8i/spongbobevil.png?rlkey=suezh7m365ell47557y0v8y5l&dl=0",cb, done)
+                
+                MakeMaterial("https://dl.dropboxusercontent.com/scl/fi/1157axr3lxo90hgh96cb5/brick.png?rlkey=l3liu1ca1clfc7lbm1lt40u0p&dl=0")
+            
+            end
+        end
+        
+    end
+    
+    
+    //Hooks
+    hook.add("tick", "CTick", ClientTick)
+    hook.add("PlayerChat", "Chat", OwnerChat)
+end
+
+//Server\\
+
+if SERVER then
+
+
+
+
+// Get the PlaceBlock Net Call and execute the CreateBlock Function
+net.receive("PlaceBlock", function()
+    CreateBlock()
+    CBlockMat = net.readString()
+end)
+
+net.receive("InitMCBlockMaterial", function()
+    CBlockMat = net.readString()
+end)
+
+net.receive("BreakBlock", function()
+    
+    BreakBlock()
+end)
+    
+    
+function ServerTick()
+    
+    
+    
+end
+
+chip():setColor(Color(0,0,0,0))
+
+chip():setNocollideAll(true)
+
+// Creates a block, then registers it into a table for later use. (Like for breaking.)
+function CreateBlock()
+    
+    // If placing on another block.
+    if owner():getEyeTrace().StartPos:getDistance(owner():getEyeTrace().HitPos) < 500 then
+        
+        if owner():getEyeTrace().Entity:getOwner() == owner() then
+            
+            // Don't place the block if we are not using the hands weapon
+            if CBlockMat != nil and owner():getActiveWeapon() == owner():getWeapon("none") then
+                
+                NewBlock = prop.create(owner():getEyeTrace().Entity:getPos() + owner():getEyeTrace().HitNormal * 47.5 ,Angle(0,0,0), BlockModel, true) //Angle, mdl and if it is frozen.
+                
+                NewBlock:setMaterial("!" .. CBlockMat)
+                //Register Block into Table.
+                table.insert(BlockTable, #BlockTable + 1, NewBlock)
+    
+                NewBlock:emitSound("physics/cardboard/cardboard_box_impact_hard4.wav", 75, math.random(75,100), 1, CHAN_AUTO)
+            end
+            
+            
+            
+        end
+    end
+    
+    // if not placing on owned block or if we are placing on world.
+    if owner():getEyeTrace().StartPos:getDistance(owner():getEyeTrace().HitPos) < 500 and owner():getEyeTrace().Entity:getOwner() != owner() or owner():getEyeTrace().Entity == nil then
+            // Don't place the block if we are not using the hands weapon
+            if CBlockMat != nil and owner():getActiveWeapon() == owner():getWeapon("none") then
+                
+                NewBlock = prop.create(owner():getEyeTrace().HitPos + owner():getEyeTrace().HitNormal * 25 ,Angle(0,0,0), BlockModel, true) //Angle, mdl and if it is frozen.
+                
+                NewBlock:setMaterial("!" .. CBlockMat)
+                
+                //Register Block into Table.
+                table.insert(BlockTable, #BlockTable + 1, NewBlock)
+    
+                NewBlock:emitSound("physics/cardboard/cardboard_box_impact_hard4.wav", 75, math.random(75,100), 1, CHAN_AUTO)
+            end
+        end
+
+
+end
+
+// Breaks a block
+function BreakBlock()
+    
+    // Get the block we are looking at.
+    if owner():getEyeTrace().StartPos:getDistance(owner():getEyeTrace().HitPos) < 500 then
+        
+        // Check that the block is in our blocktable.
+        if table.hasValue(BlockTable, owner():getEyeTrace().Entity) and owner():getActiveWeapon() == owner():getWeapon("none") then
+            
+            // if it is, remove it from our table, then removes the entity
+            table.removeByValue(BlockTable, owner():getEyeTrace().Entity)
+            
+            chip():emitSound("physics/concrete/concrete_break2.wav", 75, math.random(75,100), 1, CHAN_AUTO)
+            
+            chip():setPos(owner():getEyeTrace().Entity:getPos())
+            
+            owner():getEyeTrace().Entity:remove()
+        end
+    end
+end
+
+
+
+hook.add("tick", "STick", ServerTick)
+
+
+
+end
+
+//Made by NitroStorm, do not remove this line.
+    
+//Block Textures by Mojang, this script is not monitized in any way.

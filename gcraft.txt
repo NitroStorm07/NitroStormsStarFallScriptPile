@@ -135,28 +135,28 @@ if CLIENT then
             if string.find(text, "!givegcitem ", 0, false) and string.find(text, "planks", 0, false) != nil then
                 //BlockMat:setTextureURL("$basetexture", "https://dl.dropboxusercontent.com/scl/fi/dn2gn8609o7eeb4mngs8i/spongbobevil.png?rlkey=suezh7m365ell47557y0v8y5l&dl=0",cb, done)
                 
-                MakeMaterial("https://dl.dropboxusercontent.com/scl/fi/7xc2vy11bq6jz8wpsm9sp/planks_oak.png?rlkey=ylizprd92t7rhn5qteltinphx&dl=0")
+                MakeMaterial("https://raw.githubusercontent.com/NitroStorm07/NitroStormsStarFallScriptPile/main/images/Minecraft/planks_oak.png")
             
             end
             //grass
             if string.find(text, "!givegcitem ", 0, false) and string.find(text, "grass", 0, false) != nil then
                 //BlockMat:setTextureURL("$basetexture", "https://dl.dropboxusercontent.com/scl/fi/dn2gn8609o7eeb4mngs8i/spongbobevil.png?rlkey=suezh7m365ell47557y0v8y5l&dl=0",cb, done)
                 
-                MakeMaterial("https://dl.dropboxusercontent.com/scl/fi/a2mpki7kiy23co5ph3unv/grass_carried.png?rlkey=z7yu9zzjb0jhreueongakcgfg&dl=0")
+                MakeMaterial("https://raw.githubusercontent.com/NitroStorm07/NitroStormsStarFallScriptPile/main/images/Minecraft/grass_carried.png")
             
             end
             //Dirt
             if string.find(text, "!givegcitem ", 0, false) and string.find(text, "dirt", 0, false) != nil then
                 //BlockMat:setTextureURL("$basetexture", "https://dl.dropboxusercontent.com/scl/fi/dn2gn8609o7eeb4mngs8i/spongbobevil.png?rlkey=suezh7m365ell47557y0v8y5l&dl=0",cb, done)
                 
-                MakeMaterial("https://dl.dropboxusercontent.com/scl/fi/2ala4cbbzrpa6h4sbe2nq/dirt.png?rlkey=zrm14t53howfiu32mnht2flv8&st=l3kfi9pc&dl=1")
+                MakeMaterial("https://raw.githubusercontent.com/NitroStorm07/NitroStormsStarFallScriptPile/main/images/Minecraft/dirt.png")
             
             end
             //Bricks
             if string.find(text, "!givegcitem ", 0, false) and string.find(text, "bricks", 0, false) != nil then
                 //BlockMat:setTextureURL("$basetexture", "https://dl.dropboxusercontent.com/scl/fi/dn2gn8609o7eeb4mngs8i/spongbobevil.png?rlkey=suezh7m365ell47557y0v8y5l&dl=0",cb, done)
                 
-                MakeMaterial("https://dl.dropboxusercontent.com/scl/fi/1157axr3lxo90hgh96cb5/brick.png?rlkey=l3liu1ca1clfc7lbm1lt40u0p&dl=0")
+                MakeMaterial("https://raw.githubusercontent.com/NitroStorm07/NitroStormsStarFallScriptPile/main/images/Minecraft/brick.png")
             
             end
         end
